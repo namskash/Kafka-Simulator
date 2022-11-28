@@ -143,10 +143,11 @@ def handle(client,address,topic,type):
 					print(producers)
 
 				break	# exit this thread of handle
-		except:
+		except Exception as e:
+			print("exception:",e)
 			# print("except")
 			# Removing And Closing Clients
-			client.close()
+			#client.close()
 			print("%s at port number: %d left"%(type,address[1]))
 
 			if type == 'producer':
@@ -214,6 +215,13 @@ def receive():
 
 
 ## Followers:
+def leaderChangeHandle():
+	leader_broker, address = server.accept()
+	print("Leader changed:",address)
+	
+	follow_thread = threading.Thread(target=follower,args=())
+	follow_thread.start()
+
 def follower():
 	global leader
 	while leader == 0:
@@ -255,7 +263,8 @@ leader_broker, address = server.accept()
 follow_thread = threading.Thread(target=follower,args=())
 follow_thread.start()
 
-
+handle_thread = threading.Thread(target=leaderChangeHandle,args=())
+handle_thread.start()
 # Leader =1 now ! Starting Server
 
 while leader == 0:

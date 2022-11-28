@@ -51,7 +51,6 @@ def receive():
 			while connected == False:
 				try:
 					client.connect(('127.0.0.1',broker_port))
-					sleep(2)
 					print("type your msg: ")
 					connected = True
 
@@ -60,7 +59,7 @@ def receive():
 				except:
 					#print("Failed. Retrying...")
 					#sleep(2)
-					client.close()
+					#client.close()
 					break
 			sleep(1)
 			#break
@@ -68,7 +67,6 @@ def receive():
 # Sending Messages To Broker
 def write():
 	while True:
-		sleep(2)
 		message = 'topic({}): {}'.format(topic, input('type your msg: '))
 		#"""
 		if "EXIT" in message:

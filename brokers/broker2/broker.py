@@ -147,10 +147,11 @@ def handle(client,address,topic,type):
 					print(producers)
 
 				break	# exit this thread of handle
-		except:
+		except Exception as e:
+			print("exception:",e)
 			# print("except")
 			# Removing And Closing Clients
-			client.close()
+			#client.close()
 			print("%s at port number: %d left"%(type,address[1]))
 
 			if type == 'producer':
@@ -163,7 +164,6 @@ def handle(client,address,topic,type):
 
 # Receiving / Listening Function
 def receive():
-	print("receive")
 	while True:
 		# Accept Connection
 		client, address = server2.accept()
@@ -220,7 +220,6 @@ def receive():
 
 ## Followers:
 def follower():
-	print("follower")
 	global leader
 	while leader == 0:
 		msg = ''
