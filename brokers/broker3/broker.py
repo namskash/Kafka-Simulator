@@ -217,14 +217,15 @@ def follower():
 	# Accept Connection
 	while leader == 0:
 		msg = None
-		while msg == None:
+		while msg == None or msg == '':
 			msg = leader_broker.recv(1024).decode("ascii")
 
-		msg = msg.split('-')
+		msg = msg.split(' - ')
+		print(msg)
 
 		topic = msg[0]
 		counter = int(msg[1])
-		message = msg
+		message = msg[2]
 
 		o = subprocess.run(["mkdir", "-p",topic])					#,capture_output=True,text=True)
 
@@ -243,21 +244,19 @@ def follower():
 
 ## Main part
 # Keep checking if LEADER
-while True:
-	if leader == 1:
-		# Starting Server
-		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.bind(('127.0.0.1', 55555))
-		server.listen()
-		print('Broker is running')
+while leader == 0:
+	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server.bind(('127.0.0.1', 55557))
+	server.listen()
+	leader_broker, address = server.accept()
+	follower()
 
-		# If this broker is the leader, then the 1st 2 are down. So no point connectiong to those
+# Starting Server
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('127.0.0.1', 55555))
+server.listen()
+print('Broker is running')
 
-		receive()
+# If this broker is the leader, then the 1st 2 are down. So no point connectiong to those
 
-	else:
-		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.bind(('127.0.0.1', 55557))
-		server.listen()
-		leader_broker, address = server.accept()
-		follower()
+receive()

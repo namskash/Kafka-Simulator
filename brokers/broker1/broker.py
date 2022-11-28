@@ -76,9 +76,9 @@ def broadcast(message,topic,counter):
 	f2.close()
 
 	if leader == 1:
-		# TODO Send message to followers
-		msg = topic + "-"
-		msg += counter + "-"
+		# Send message to followers
+		msg = topic + " - "
+		msg += str(counter) + " - "
 		msg += message
 		follower1.send(msg.encode("ascii"))
 		follower2.send(msg.encode("ascii"))
@@ -146,10 +146,11 @@ def handle(client,address,topic,type):
 					print(producers)
 
 				break	# exit this thread of handle
-		except:
+		except Exception as e:
+			print("exception:",e)
 			# print("except")
 			# Removing And Closing Clients
-			client.close()
+			# client.close()
 			print("%s at port number: %d left"%(type,address[1]))
 
 			if type == 'producer':
@@ -216,18 +217,19 @@ def receive():
 		thread.start()
 
 # Keep checking if LEADER
-while True:
-	if leader == 1:
-		# Starting Server
-		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		server.bind(('127.0.0.1', 55555))
-		server.listen()
-		print('Broker is running')
+if leader == 1:
+	# Starting Server
+	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server.bind(('127.0.0.1', 55555))
+	server.listen()
+	print('Broker is running')
 
-		follower1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		follower1.connect(('127.0.0.1',55556))
-		
-		follower2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		follower2.connect(('127.0.0.1',55557))
+	sleep(5)	# Wait for the other brokers to start
 
-		receive()
+	follower1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	follower1.connect(('127.0.0.1',55556))
+	
+	follower2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	follower2.connect(('127.0.0.1',55557))
+
+	receive()

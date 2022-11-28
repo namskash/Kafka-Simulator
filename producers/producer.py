@@ -38,9 +38,14 @@ def receive():
 				client.send('1'.encode('ascii'))	# message recieved ack
 				if message!= '1':
 					print(message)
-		except:
+		except Exception as e:
+			print("exception: ",e)
 			# Close Connection When Error
-			print("The broker closed the connection!")
+			print("Failed! Retrying after 30 seconds",end='')
+			for i in range(15):
+				sleep(1)
+				print('.',end='')
+			print()
 			#client.close()
 
 			client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -87,6 +92,6 @@ def write():
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
-sleep(2)
+sleep(3)
 write_thread = threading.Thread(target=write)
 write_thread.start()
