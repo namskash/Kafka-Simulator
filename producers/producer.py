@@ -45,7 +45,8 @@ def receive():
 			client.close()
 
 			client2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			client2.connect(('127.0.0.1', broker_port+1))
+			client2.connect(('127.0.0.1',55556))
+			
 			#break
 
 # Sending Messages To Broker
@@ -56,7 +57,7 @@ def write():
 		if "EXIT" in message:
 			client.send("EXIT".encode('ascii'))
 			print("exiting...")
-			sleep(5)
+			sleep(1)
 			client.close()
 			#exit()
 			break
@@ -73,6 +74,6 @@ def write():
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
-sleep(3)
+sleep(2)
 write_thread = threading.Thread(target=write)
 write_thread.start()

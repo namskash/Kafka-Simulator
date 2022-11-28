@@ -1,6 +1,6 @@
 import socket
 import threading
-from time import sleep,time
+from time import time
 from datetime import date
 import subprocess
 
@@ -85,6 +85,7 @@ def broadcastFromBeg(client,topic):
 # Handling Messages From Clients
 def handle(client,address,topic,type):
 	counter = 0
+	topicCopy = topic
 	topic = 'topic(' + topic + ')'
 	if type == 'consumer+':
 		broadcastFromBeg(client,topic)
@@ -107,18 +108,23 @@ def handle(client,address,topic,type):
 					broadcast(msg[1].strip(),topic,counter)
 					counter += 1
 			else:
-				print("Port number: %d left"%(address[1]))
+				print("%s at port number: %d left"%(type,address[1]))
 				client.close()
+				if type == 'producer':
+					producers[topicCopy].remove(client)
+					print(producers)
+
 				break	# exit this thread of handle
 		except:
 			# print("except")
 			# Removing And Closing Clients
 			client.close()
-			print('{}: {} left!'.format(type,address[1]))
+			print("%s at port number: %d left"%(type,address[1]))
+
 			if type == 'producer':
-				del producers[client]
+				producers[topicCopy].remove(client)
 			elif 'consumer' in type:
-				del consumers[client]
+				consumers[topicCopy].remove(client)
 			
 			break
 
