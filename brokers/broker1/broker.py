@@ -27,6 +27,7 @@ def receive():
 				
 				global leader
 				leader = 1
+				break
 		except:
 			print("except zookeeper")
 			pass
@@ -76,7 +77,11 @@ def broadcast(message,topic,counter):
 
 	if leader == 1:
 		# TODO Send message to followers
-		pass
+		msg = topic + "-"
+		msg += counter + "-"
+		msg += message
+		follower1.send(msg.encode("ascii"))
+		follower2.send(msg.encode("ascii"))
 
 # For consumer --from-beginning
 def broadcastFromBeg(client,topic):
@@ -210,11 +215,19 @@ def receive():
 		thread = threading.Thread(target=handle, args=(client,address,topic,type))
 		thread.start()
 
+# Keep checking if LEADER
+while True:
+	if leader == 1:
+		# Starting Server
+		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.bind(('127.0.0.1', 55555))
+		server.listen()
+		print('Broker is running')
 
-if leader == 1:
-	# Starting Server
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server.bind(('127.0.0.1', 55555))
-	server.listen()
-	print('Broker is running')
-	receive()
+		follower1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		follower1.connect(('127.0.0.1',55556))
+		
+		follower2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		follower2.connect(('127.0.0.1',55557))
+
+		receive()

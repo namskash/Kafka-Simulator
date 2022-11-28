@@ -7,7 +7,7 @@ import subprocess
 # % Zookeeper functions:
 
 leader = 0
-followers = [55556,55557]
+followers = []
 
 broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 broker.connect(('127.0.0.1',11111))		#% Connect to zookeeper's port
@@ -27,6 +27,7 @@ def receive():
 				
 				global leader
 				leader = 1
+				break
 		except:
 			print("except: zookeeper")
 			pass
@@ -211,10 +212,52 @@ def receive():
 		thread.start()
 
 
-if leader == 1:
-	# Starting Server
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server.bind(('127.0.0.1', 55555))
-	server.listen()
-	print('Broker is running')
-	receive()
+## Followers:
+def follower():
+	# Accept Connection
+	while leader == 0:
+		msg = None
+		while msg == None:
+			msg = leader_broker.recv(1024).decode("ascii")
+
+		msg = msg.split('-')
+
+		topic = msg[0]
+		counter = int(msg[1])
+		message = msg
+
+		o = subprocess.run(["mkdir", "-p",topic])					#,capture_output=True,text=True)
+
+		f0 = open('{}/p{}_c0.txt'.format(topic, counter%3), 'a')
+		f0.write(message + "\n")
+		f0.close()
+		
+		f1 = open('{}/p{}_c1.txt'.format(topic, counter%3), 'a')    
+		f1.write(message + "\n")
+		f1.close()
+
+		f2 = open('{}/p{}_c2.txt'.format(topic, counter%3), 'a')
+		f2.write(message + "\n")
+		f2.close()
+
+
+## Main part
+# Keep checking if LEADER
+while True:
+	if leader == 1:
+		# Starting Server
+		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.bind(('127.0.0.1', 55555))
+		server.listen()
+		print('Broker is running')
+
+		# If this broker is the leader, then the 1st 2 are down. So no point connectiong to those
+
+		receive()
+
+	else:
+		server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		server.bind(('127.0.0.1', 55557))
+		server.listen()
+		leader_broker, address = server.accept()
+		follower()

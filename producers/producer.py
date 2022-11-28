@@ -47,7 +47,7 @@ def receive():
 			connected = False
 			while connected == False:
 				try:
-					client.connect(('127.0.0.1',55556))
+					client.connect(('127.0.0.1',broker_port))
 					sleep(2)
 					print("type your msg: ")
 					connected = True
