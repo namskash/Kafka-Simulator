@@ -3,13 +3,15 @@ import threading
 from time import sleep
 import sys
 
-if len(sys.argv) > 3:
-	exit()
 
 # Choosing topic
 topic = input("Choose your topic: ")
 type = 'consumer'
 
+if '--from-beginning' in sys.argv:
+	print(sys.argv)
+	type += '+'
+	
 broker_port = 55555
 
 # Connecting To Server
@@ -46,10 +48,10 @@ def receive():
 		except:
 			# Close Connection When Error
 			print("An error occured! Retrying...")
-			client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			client.connect(('127.0.0.1', broker_port))
-			#client.close()
-			#break
+			#client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			#client.connect(('127.0.0.1', broker_port))
+			client.close()
+			break
 
 # Sending Messages To Server
 """

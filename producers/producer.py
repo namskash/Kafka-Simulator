@@ -41,9 +41,12 @@ def receive():
 					print(message)
 		except:
 			# Close Connection When Error
-			print("The broker closed the connection! Try again after 30 seconds...")
+			print("The broker closed the connection!")
 			client.close()
-			break
+
+			client2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+			client2.connect(('127.0.0.1', broker_port+1))
+			#break
 
 # Sending Messages To Broker
 def write():

@@ -7,7 +7,7 @@ import subprocess
 
 # Connection Data
 host = '127.0.0.1'
-port = 55555		# port of broker
+port = 55556		# port of broker
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
