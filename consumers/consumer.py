@@ -20,6 +20,7 @@ client.connect(('127.0.0.1', broker_port))
 
 # Listening to Server and Sending topic
 def receive():
+	global client
 	while True:
 		try:
 			message = client.recv(1024).decode('ascii')
@@ -44,12 +45,24 @@ def receive():
 				if message!= '1':
 					print(message)
 		except:
-			# Close Connection When Error
-			print("An error occured! Retrying...")
-			#client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-			#client.connect(('127.0.0.1', broker_port))
-			client.close()
-			break
+			print("Failed! Retrying after 30 seconds...")
+			sleep(15)
+			
+			#client.close()
+
+			connected = False
+			client = socket.socket()
+			while connected == False:
+				try:
+					client.connect(('127.0.0.1',broker_port))
+					sleep(2)
+					connected = True
+				except:
+					#print("Failed. Retrying...")
+					#sleep(2)
+					client.close()
+					break
+			sleep(1)
 
 
 # Starting Threads For Listening
