@@ -1,13 +1,13 @@
 import socket
 import threading
-from time import time
+from time import sleep,time
 from datetime import date
 import subprocess
 
 
 # Connection Data
 host = '127.0.0.1'
-port = 55555		# port of broker
+port = 55556		# port of broker
 
 # Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -145,7 +145,7 @@ def receive():
 		#% send ACK
 		client.send(str(address[1]).encode('ascii'))
 
-		#sleep(1)
+		sleep(1)
 		type = None
 		while type == None:
 			client.send('TYPE'.encode('ascii'))
