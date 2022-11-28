@@ -14,7 +14,7 @@ if '--from-beginning' in sys.argv:
 	
 broker_port = 55555
 
-# Connecting To Server
+# Connecting To Broker
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', broker_port))
 
@@ -22,8 +22,6 @@ client.connect(('127.0.0.1', broker_port))
 def receive():
 	while True:
 		try:
-			# Receive Message From Server
-			# If 'TOPIC' Send topic
 			message = client.recv(1024).decode('ascii')
 
 			if message == 'TOPIC':
@@ -53,18 +51,7 @@ def receive():
 			client.close()
 			break
 
-# Sending Messages To Server
-"""
-def write():
-	while True:
-		message = '{}: {}'.format(topic, input('type your msg:'))
-		client.send(message.encode('ascii'))
-"""
 
-
-# Starting Threads For Listening And Writing
+# Starting Threads For Listening
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
-
-# write_thread = threading.Thread(target=write)
-# write_thread.start()

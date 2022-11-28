@@ -1,24 +1,47 @@
 import socket
 import threading
-from time import sleep,time
+from time import time,sleep
 from datetime import date
 import subprocess
 
+# % Zookeeper functions:
 
-# Connection Data
-host = '127.0.0.1'
-port = 55556		# port of broker
+leader = 0
+followers = [55556,55557]
 
-# Starting Server
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind((host, port))
-server.listen()
+broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+broker.connect(('127.0.0.1',11111))		#% Connect to zookeeper's port
 
-# Lists For Clients and Their topics
+# Listening to Server and Sending topic
+def receive():
+	while True:
+		try:
+			message = broker.recv(1024).decode('ascii')
+
+			if message == 'HEARTBEAT':
+				broker.send("1".encode('ascii'))
+
+			elif message == 'LEADER':
+				print("I have been made leader!!")
+				broker.send("1".encode('ascii'))
+				
+				global leader
+				leader = 1
+		except:
+			print("except zookeeper")
+			pass
+
+# Starting Threads For Listening And Writing
+receive_thread = threading.Thread(target=receive)
+receive_thread.start()
+
+
+#@ Broker functions
+
+# Dicts For Clients and Their topics
 producers = {}
 consumers = {}
 
-# Sending Messages To All Connected Clients
 def broadcast(message,topic,counter):
 	print(message)
 
@@ -26,9 +49,9 @@ def broadcast(message,topic,counter):
 	_time = str(time())
 	message = message + "," + _date + "," + _time
 
-	key = topic.split("topic(")[-1].split(')')[0]		# TO get 'BD' from 'topic(BD)'
+	key = topic.split("topic(")[-1].split(')')[0]				# TO get 'BD' from 'topic(BD)'
 
-# For all the consumers listening right now, just send the message
+# For all the consumers listening right now, just send the message (solves the issue of having to check for timestamp and stuff)
 	if key in consumers:
 		for client in consumers[key]:
 			ack = None
@@ -37,7 +60,7 @@ def broadcast(message,topic,counter):
 				ack = client.recv(10).decode('ascii')
 
 # Write to partitions as well
-	o = subprocess.run(["mkdir", "-p",topic])		#,capture_output=True,text=True)
+	o = subprocess.run(["mkdir", "-p",topic])					#,capture_output=True,text=True)
 
 	f0 = open('{}/p{}_c0.txt'.format(topic, counter%3), 'a')
 	f0.write(message + "\n")
@@ -51,6 +74,11 @@ def broadcast(message,topic,counter):
 	f2.write(message + "\n")
 	f2.close()
 
+	if leader == 1:
+		# TODO Send message to followers
+		pass
+
+# For consumer --from-beginning
 def broadcastFromBeg(client,topic):
 	try:
 		f0 = open('{}/p0_c0.txt'.format(topic), 'r')
@@ -90,7 +118,6 @@ def handle(client,address,topic,type):
 	if type == 'consumer+':
 		broadcastFromBeg(client,topic)
 
-
 	while True:
 		try:
 			# Broadcasting Messages
@@ -98,7 +125,6 @@ def handle(client,address,topic,type):
 			while message == None:
 				message = client.recv(1024).decode('ascii')
 		
-			
 			if message != "EXIT":
 				#% send ACK
 				client.send('1'.encode('ascii'))
@@ -168,7 +194,8 @@ def receive():
 			else:
 				consumers[topic] = [client]
 
-		else: 	#zookeeper
+		else: 	#% zookeeper
+			#broker.send("1".encode("ascii"))
 			pass
 
 
@@ -176,7 +203,7 @@ def receive():
 		print("Topic: {}, type: {}".format(topic,type))
 		ack = None
 		while ack == None:
-			client.send('Connected to server!'.encode('ascii'))
+			client.send('Connected to broker!'.encode('ascii'))
 			ack = client.recv(10)
 
 		# Start Handling Thread For Client
@@ -184,5 +211,10 @@ def receive():
 		thread.start()
 
 
-print('broker is running')
-receive()
+if leader == 1:
+	# Starting Server
+	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server.bind(('127.0.0.1', 55555))
+	server.listen()
+	print('Broker is running')
+	receive()

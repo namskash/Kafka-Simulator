@@ -6,7 +6,7 @@ import subprocess
 
 # % Zookeeper functions:
 
-leader = 1
+leader = 0
 followers = [55556,55557]
 
 broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -28,7 +28,7 @@ def receive():
 				global leader
 				leader = 1
 		except:
-			print("except zookeeper")
+			print("except: zookeeper")
 			pass
 
 # Starting Threads For Listening And Writing

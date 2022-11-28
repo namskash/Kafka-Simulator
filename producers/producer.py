@@ -8,8 +8,7 @@ type = 'producer'
 
 broker_port = 55555
 
-# Connecting To Server
-#global client
+# Connecting To Broker
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', broker_port))
 
@@ -18,10 +17,7 @@ def receive():
 	global client
 	while True:
 		try:
-			# Receive Message From Server
-			# If 'TOPIC' Send topic
 			message = client.recv(1024).decode('ascii')
-			print("msg: ",message)
 
 			if message == 'TOPIC':
 				id = None
@@ -53,13 +49,16 @@ def receive():
 				try:
 					client.connect(('127.0.0.1',55556))
 					sleep(2)
+					print("type your msg: ")
 					connected = True
 
 					write_thread = threading.Thread(target=write)
 					write_thread.start()
 				except:
-					print("Failed. Retrying...")
-					sleep(2)
+					#print("Failed. Retrying...")
+					#sleep(2)
+					client.close()
+					break
 			sleep(1)
 			#break
 
