@@ -6,6 +6,7 @@ import subprocess
 
 # % Zookeeper functions:
 
+global leader
 leader = 0
 followers = []
 
@@ -13,7 +14,7 @@ broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 broker.connect(('127.0.0.1',11111))		#% Connect to zookeeper's port
 
 # Listening to Server and Sending topic
-def receive():
+def zookeeper_receive():
 	while True:
 		try:
 			message = broker.recv(1024).decode('ascii')
@@ -33,7 +34,7 @@ def receive():
 			pass
 
 # Starting Threads For Listening And Writing
-receive_thread = threading.Thread(target=receive)
+receive_thread = threading.Thread(target=zookeeper_receive)
 receive_thread.start()
 
 
@@ -214,11 +215,12 @@ def receive():
 
 ## Followers:
 def follower():
-	# Accept Connection
+	global leader
 	while leader == 0:
-		msg = None
-		while msg == None or msg == '':
+		msg = ''
+		while msg == '':
 			msg = leader_broker.recv(1024).decode("ascii")
+		print(msg)
 
 		msg = msg.split(' - ')
 		print(msg)
@@ -244,19 +246,32 @@ def follower():
 
 ## Main part
 # Keep checking if LEADER
-while leader == 0:
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server.bind(('127.0.0.1', 55557))
-	server.listen()
-	leader_broker, address = server.accept()
-	follower()
 
-# Starting Server
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.bind(('127.0.0.1', 55555))
+server.bind(('127.0.0.1', 55557))
 server.listen()
-print('Broker is running')
+leader_broker, address = server.accept()
 
-# If this broker is the leader, then the 1st 2 are down. So no point connectiong to those
+follow_thread = threading.Thread(target=follower,args=())
+follow_thread.start()
 
-receive()
+
+# Leader =1 now ! Starting Server
+
+while leader == 0:
+	pass
+
+try:
+	server2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server2.bind(('127.0.0.1', 55555))
+	server2.listen()
+	print('Broker is running')
+
+	sleep(5)	# Wait for the other brokers to start
+
+	# If this broker is the leader, then the 1st one is down. So no point connectiong to that
+
+	receive_thread = threading.Thread(target=receive,args=())
+	receive_thread.start()
+except Exception as e:
+	print(e)

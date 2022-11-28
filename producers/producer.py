@@ -38,18 +38,16 @@ def receive():
 				client.send('1'.encode('ascii'))	# message recieved ack
 				if message!= '1':
 					print(message)
-		except Exception as e:
-			print("exception: ",e)
-			# Close Connection When Error
-			print("Failed! Retrying after 30 seconds",end='')
-			for i in range(15):
-				sleep(1)
-				print('.',end='')
-			print()
+		except socket.error:
+			#print("exception: ",e)
+			
+			print("Failed! Retrying after 30 seconds...")
+			sleep(15)
+			
 			#client.close()
 
-			client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 			connected = False
+			client = socket.socket()
 			while connected == False:
 				try:
 					client.connect(('127.0.0.1',broker_port))
@@ -70,6 +68,7 @@ def receive():
 # Sending Messages To Broker
 def write():
 	while True:
+		sleep(2)
 		message = 'topic({}): {}'.format(topic, input('type your msg: '))
 		#"""
 		if "EXIT" in message:

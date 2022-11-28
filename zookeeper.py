@@ -5,7 +5,6 @@ brokers = {}
 leader_address = 0
 
 def handle():
-	print("handle is called")
 	global brokers
 	global leader_address
 	while True:
@@ -41,7 +40,6 @@ def handle():
 		print()
 
 def receive():
-	print("receive is called")
 	flag = True
 	while True:
 		# Accept Connection
@@ -65,4 +63,5 @@ def receive():
 zookeeper = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 zookeeper.bind(('127.0.0.1', 11111))
 zookeeper.listen()
+print("Zookeeper is running")
 receive()

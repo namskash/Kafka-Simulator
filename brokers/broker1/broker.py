@@ -13,7 +13,7 @@ broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 broker.connect(('127.0.0.1',11111))		#% Connect to zookeeper's port
 
 # Listening to Server and Sending topic
-def receive():
+def zookeeper_receive():
 	while True:
 		try:
 			message = broker.recv(1024).decode('ascii')
@@ -33,7 +33,7 @@ def receive():
 			pass
 
 # Starting Threads For Listening And Writing
-receive_thread = threading.Thread(target=receive)
+receive_thread = threading.Thread(target=zookeeper_receive)
 receive_thread.start()
 
 
@@ -75,6 +75,7 @@ def broadcast(message,topic,counter):
 	f2.write(message + "\n")
 	f2.close()
 
+	global leader
 	if leader == 1:
 		# Send message to followers
 		msg = topic + " - "
@@ -201,7 +202,7 @@ def receive():
 				consumers[topic] = [client]
 
 		else: 	#% zookeeper
-			#broker.send("1".encode("ascii"))
+			broker.send("1".encode("ascii"))
 			pass
 
 

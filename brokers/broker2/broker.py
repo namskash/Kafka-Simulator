@@ -13,7 +13,7 @@ broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 broker.connect(('127.0.0.1',11111))		#% Connect to zookeeper's port
 
 # Listening to Server and Sending topic
-def receive():
+def zookeeper_receive():
 	while True:
 		try:
 			message = broker.recv(1024).decode('ascii')
@@ -22,18 +22,18 @@ def receive():
 				broker.send("1".encode('ascii'))
 
 			elif message == 'LEADER':
-				print("I have been made leader!!")
 				broker.send("1".encode('ascii'))
+				print("I have been made leader!!")
 				
 				global leader
 				leader = 1
-				break
+				#break
 		except:
 			print("except zookeeper")
 			pass
 
 # Starting Threads For Listening And Writing
-receive_thread = threading.Thread(target=receive)
+receive_thread = threading.Thread(target=zookeeper_receive)
 receive_thread.start()
 
 
@@ -76,6 +76,7 @@ def broadcast(message,topic,counter):
 	f2.write(message + "\n")
 	f2.close()
 
+	global leader
 	if leader == 1:
 		# Send message to followers
 		msg = topic + " - "
@@ -162,9 +163,10 @@ def handle(client,address,topic,type):
 
 # Receiving / Listening Function
 def receive():
+	print("receive")
 	while True:
 		# Accept Connection
-		client, address = server.accept()
+		client, address = server2.accept()
 		print("Connected! Port number: {}".format(address[1]))
 
 		# Request And Store topic
@@ -200,7 +202,7 @@ def receive():
 				consumers[topic] = [client]
 
 		else: 	#% zookeeper
-			#broker.send("1".encode("ascii"))
+			broker.send("1".encode("ascii"))
 			pass
 
 
@@ -218,11 +220,13 @@ def receive():
 
 ## Followers:
 def follower():
-	# Accept Connection
+	print("follower")
+	global leader
 	while leader == 0:
-		msg = None
-		while msg == None or msg == '':
+		msg = ''
+		while msg == '':
 			msg = leader_broker.recv(1024).decode("ascii")
+		print(msg)
 
 		msg = msg.split(' - ')
 		print(msg)
@@ -244,27 +248,40 @@ def follower():
 		f2 = open('{}/p{}_c2.txt'.format(topic, counter%3), 'a')
 		f2.write(message + "\n")
 		f2.close()
+		print(leader)
+		sleep(1)
 
 
 ## Main part
 # Keep checking if LEADER
-while leader == 0:
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server.bind(('127.0.0.1', 55556))
-	server.listen()
-	leader_broker, address = server.accept()
-	follower()	
 
-# Starting Server
-	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	server.bind(('127.0.0.1', 55555))
-	server.listen()
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind(('127.0.0.1', 55556))
+server.listen()
+leader_broker, address = server.accept()
+
+follow_thread = threading.Thread(target=follower,args=())
+follow_thread.start()
+
+
+# Leader =1 now ! Starting Server
+
+while leader == 0:
+	pass
+
+try:
+	server2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	server2.bind(('127.0.0.1', 55555))
+	server2.listen()
 	print('Broker is running')
 
 	sleep(5)	# Wait for the other brokers to start
-	
-# If this broker is the leader, then the 1st one is down. So no point connectiong to that
+
+	# If this broker is the leader, then the 1st one is down. So no point connectiong to that
 	follower1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	follower1.connect(('127.0.0.1',55557))
 
-	receive()
+	receive_thread = threading.Thread(target=receive,args=())
+	receive_thread.start()
+except Exception as e:
+	print(e)
