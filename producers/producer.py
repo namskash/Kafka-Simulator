@@ -1,6 +1,7 @@
 import socket
 import threading
 from time import sleep
+from colorama import Fore
 
 # Choosing topic
 topic = input("Enter your topic: ")
@@ -13,6 +14,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', broker_port))
 
 Exit = False
+wait = 0
 
 # Listening to Server and Sending topic
 def receive():
@@ -40,7 +42,7 @@ def receive():
 				print("ACK recieved for type")
 
 			else:
-				client.send('1'.encode('ascii'))	# message recieved ack
+				client.send('1'.encode('ascii'))	# Message recieved ack
 				
 				if message!= '1':
 					print(message)
@@ -54,7 +56,22 @@ def receive():
 			if Exit:
 				break
 
-			print("Connection with broker failed!\nRetrying after 15 seconds...")
+			global wait
+			wait += 1
+
+			if wait > 3:
+				print(Fore.RED + "Fatal error!",Fore.WHITE + "Can't connect to broker.\nExiting",end='')
+				sleep(0.5)
+				print('.',end='')
+				sleep(0.5)
+				print('.',end='')
+				sleep(0.5)
+				print('.',end='')	# Slowly print '...'
+
+				print()
+				break
+
+			print(Fore.RED + "Connection with broker failed!",Fore.WHITE + "\nRetrying after 15 seconds...")
 			sleep(15)
 
 			connected = False
@@ -81,7 +98,7 @@ def write():
 
 		if "EXIT" in message:
 			client.send("EXIT".encode('ascii'))
-			print("exiting...")
+			print(Fore.RED + "exiting...",Fore.WHITE + "")	# Fore.WHITE to reset back to white
 			sleep(1)
 			client.close()
 			global Exit

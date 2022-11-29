@@ -83,6 +83,7 @@ def broadcast(message,topic,counter):
 		msg = topic + " - "
 		msg += str(counter) + " - "
 		msg += message
+
 		follower1.send(msg.encode("ascii"))
 		follower2.send(msg.encode("ascii"))
 
@@ -94,8 +95,10 @@ def broadcastFromBeg(client,topic):
 		f2 = open('{}/p2_c0.txt'.format(topic), 'r')
 		
 		for line in f0:
+			print(line)
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -103,6 +106,7 @@ def broadcastFromBeg(client,topic):
 		for line in f1:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -110,6 +114,7 @@ def broadcastFromBeg(client,topic):
 		for line in f2:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -120,9 +125,10 @@ def broadcastFromBeg(client,topic):
 
 # Handling Messages From Clients
 def handle(client,address,topic,type):
-	counter = 0
+	counter = 0									# To know which partition to write to
 	topicCopy = topic
 	topic = 'topic(' + topic + ')'
+
 	if type == 'consumer+':
 		broadcastFromBeg(client,topic)
 
@@ -141,9 +147,11 @@ def handle(client,address,topic,type):
 					msg = message.split(':')
 					broadcast(msg[1].strip(),topic,counter)
 					counter += 1
+
 			else:
 				print("%s at port number: %d left"%(type,address[1]))
 				client.close()
+				
 				if type == 'producer':
 					producers[topicCopy].remove(client)
 					# print(producers)
@@ -156,6 +164,7 @@ def handle(client,address,topic,type):
 
 			if type == 'producer':
 				producers[topicCopy].remove(client)
+
 			elif 'consumer' in type:
 				consumers[topicCopy].remove(client)
 			
@@ -223,7 +232,7 @@ def receive():
 
 # Keep checking if LEADER
 if leader == 1:
-	# Starting Server
+	# Starting broker
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server.bind(('127.0.0.1', 55555))
 	server.listen()

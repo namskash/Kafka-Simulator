@@ -78,7 +78,7 @@ def broadcast(message,topic,counter):
 	f2.close()
 
 	if leader == 1:
-		# TODO Send message to followers but in current design, no followers
+		# TODO Send message to followers, but in current design, no followers
 		pass
 
 # For consumer --from-beginning
@@ -91,6 +91,7 @@ def broadcastFromBeg(client,topic):
 		for line in f0:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -98,6 +99,7 @@ def broadcastFromBeg(client,topic):
 		for line in f1:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -105,6 +107,7 @@ def broadcastFromBeg(client,topic):
 		for line in f2:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -115,9 +118,10 @@ def broadcastFromBeg(client,topic):
 
 # Handling Messages From Clients
 def handle(client,address,topic,type):
-	counter = 0
+	counter = 0									# To know which partition to write to
 	topicCopy = topic
 	topic = 'topic(' + topic + ')'
+
 	if type == 'consumer+':
 		broadcastFromBeg(client,topic)
 
@@ -136,9 +140,11 @@ def handle(client,address,topic,type):
 					msg = message.split(':')
 					broadcast(msg[1].strip(),topic,counter)
 					counter += 1
+
 			else:
 				print("%s at port number: %d left"%(type,address[1]))
 				client.close()
+
 				if type == 'producer':
 					producers[topicCopy].remove(client)
 					# print(producers)
@@ -151,6 +157,7 @@ def handle(client,address,topic,type):
 
 			if type == 'producer':
 				producers[topicCopy].remove(client)
+
 			elif 'consumer' in type:
 				consumers[topicCopy].remove(client)
 			
@@ -219,7 +226,7 @@ def receive():
 
 ## Followers:
 def leaderHandle():
-	global leader_broker,addr
+	global leader_broker,addr	# Because it has to change port of leader to listen to in case of leader change
 	while leader == 0:
 		leader_broker, addr = server.accept()
 		print("Leader changed:",addr)

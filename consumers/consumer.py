@@ -2,7 +2,7 @@ import socket
 import threading
 from time import sleep
 import sys
-
+from colorama import Fore, Style
 
 # Choosing topic
 topic = input("Choose your topic: ")
@@ -20,6 +20,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', broker_port))
 
 Exit = False
+wait = 0
 
 # Listening to Server and Sending topic
 def receive():
@@ -47,11 +48,15 @@ def receive():
 				print("ACK recieved for type")
 
 			else:
-				client.send('1'.encode('ascii'))	# message recieved ack
+				client.send('1'.encode('ascii'))	# Message recieved ack
 
 				if message!= '1':
-					print(message)
-
+					if ',' in message:
+						msg = message.split(',')	# Message from producer
+						print(Style.DIM + 'date:',msg[1],'\ttime(ms):',msg[2],Style.RESET_ALL,'\nmessage:',msg[0])	# Easier to read
+					
+					else:
+						print(message)				# Message from broker
 		except:
 			
 			# print("exception: ",e)
@@ -61,7 +66,22 @@ def receive():
 			if Exit:
 				break
 
-			print("Connection with broker failed!\nRetrying after 15 seconds...")
+			global wait
+			wait += 1
+
+			if wait > 3:
+				print(Fore.RED + "Fatal error!",Fore.WHITE + "Can't connect to broker.\nExiting",end='')
+				sleep(0.5)
+				print('.',end='')
+				sleep(0.5)
+				print('.',end='')
+				sleep(0.5)
+				print('.',end='')	# Slowly print '...'
+
+				print()
+				break
+
+			print(Fore.RED + "Connection with broker failed!",Fore.WHITE + "\nRetrying after 15 seconds...")
 			sleep(15)
 
 			connected = False
@@ -75,7 +95,7 @@ def receive():
 				except:
 					client.close()
 					break
-				
+
 			sleep(1)
 
 

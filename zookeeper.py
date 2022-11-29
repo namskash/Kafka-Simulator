@@ -1,5 +1,6 @@
 import socket
 from time import sleep
+from colorama import Fore	# Colours in terminal!!!
 
 brokers = {}
 leader_address = 0
@@ -14,17 +15,28 @@ def handle():
 
 		for address in brokers.keys():
 			client = brokers[address]
+			
 			print("Polling broker %d..."%(counter))
 
-			client.send("HEARTBEAT".encode("ascii"))
-			heartbeat = client.recv(10).decode("ascii")
+			try:
+				client.send("HEARTBEAT".encode("ascii"))
+				heartbeat = client.recv(10).decode("ascii")
+			
+			except:
+				pass					# A follower is dead. Ignore
 
 			if heartbeat == "" and address == leader_address:	# If leader dies
+				print(address,"(leader) is",Fore.RED + "DEAD!",Fore.WHITE + "\nElecting new leader...")
 				del brokers[address]
 				flag = True
 				break
+
 			elif heartbeat == "1":
-				print("%d is alive."%(address))
+				print(address,"is",Fore.GREEN + "alive.",Fore.WHITE + "") # Fore.WHITE at the end to reset it back to white
+
+			else:
+				brokers[address] = -1	# Blackmark the socket
+				print(address,"is",Fore.RED + "DEAD.",Fore.WHITE + "")
 
 			counter += 1
 
@@ -55,7 +67,7 @@ def receive():
 		brokers[address[1]] = client
 		
 		if len(list(brokers.keys())) == 3:
-			print("All 3 brokers are running!")
+			print("All 3 brokers are running!\n")
 			break
 
 	handle()

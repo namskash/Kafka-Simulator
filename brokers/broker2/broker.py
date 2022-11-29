@@ -83,6 +83,7 @@ def broadcast(message,topic,counter):
 		msg = topic + " - "
 		msg += str(counter) + " - "
 		msg += message
+		
 		follower1.send(msg.encode("ascii"))
 
 # For consumer --from-beginning
@@ -95,6 +96,7 @@ def broadcastFromBeg(client,topic):
 		for line in f0:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -102,6 +104,7 @@ def broadcastFromBeg(client,topic):
 		for line in f1:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -109,6 +112,7 @@ def broadcastFromBeg(client,topic):
 		for line in f2:
 			line = line.strip()
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack == None:
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
@@ -119,9 +123,10 @@ def broadcastFromBeg(client,topic):
 
 # Handling Messages From Clients
 def handle(client,address,topic,type):
-	counter = 0
+	counter = 0									# To know which partition to write to
 	topicCopy = topic
 	topic = 'topic(' + topic + ')'
+
 	if type == 'consumer+':
 		broadcastFromBeg(client,topic)
 
@@ -140,9 +145,11 @@ def handle(client,address,topic,type):
 					msg = message.split(':')
 					broadcast(msg[1].strip(),topic,counter)
 					counter += 1
+
 			else:
 				print("%s at port number: %d left"%(type,address[1]))
 				client.close()
+
 				if type == 'producer':
 					producers[topicCopy].remove(client)
 					# print(producers)
@@ -155,6 +162,7 @@ def handle(client,address,topic,type):
 
 			if type == 'producer':
 				producers[topicCopy].remove(client)
+				
 			elif 'consumer' in type:
 				consumers[topicCopy].remove(client)
 			
