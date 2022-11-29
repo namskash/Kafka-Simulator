@@ -82,7 +82,10 @@ def broadcast(message,topic,counter):
 		msg = topic + " - "
 		msg += str(counter) + " - "
 		msg += message
-		follower1.send(msg.encode("ascii"))
+		try:
+			follower1.send(msg.encode("ascii"))
+		except Exception as e:
+			print("follower!!!",e)
 
 # For consumer --from-beginning
 def broadcastFromBeg(client,topic):
@@ -137,9 +140,11 @@ def handle(client,address,topic,type):
 
 				if message != '1':
 					msg = message.split(':')
+					print("here")
 					broadcast(msg[1].strip(),topic,counter)
 					counter += 1
 			else:
+				print("message")
 				print("%s at port number: %d left"%(type,address[1]))
 				client.close()
 				if type == 'producer':
@@ -214,6 +219,7 @@ def receive():
 			ack = client.recv(10)
 
 		# Start Handling Thread For Client
+		print("addr:",address)
 		thread = threading.Thread(target=handle, args=(client,address,topic,type))
 		thread.start()
 

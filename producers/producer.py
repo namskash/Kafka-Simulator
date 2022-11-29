@@ -38,8 +38,8 @@ def receive():
 				client.send('1'.encode('ascii'))	# message recieved ack
 				if message!= '1':
 					print(message)
-		except socket.error:
-			#print("exception: ",e)
+		except Exception as e:
+			print("exception: ",e)
 			
 			print("Failed! Retrying after 30 seconds...")
 			sleep(15)

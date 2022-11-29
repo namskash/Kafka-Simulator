@@ -263,8 +263,8 @@ leader_broker, address = server.accept()
 follow_thread = threading.Thread(target=follower,args=())
 follow_thread.start()
 
-handle_thread = threading.Thread(target=leaderChangeHandle,args=())
-handle_thread.start()
+#handle_thread = threading.Thread(target=leaderChangeHandle,args=())
+#handle_thread.start()
 # Leader =1 now ! Starting Server
 
 while leader == 0:
