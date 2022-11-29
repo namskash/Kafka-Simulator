@@ -12,6 +12,8 @@ broker_port = 55555
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', broker_port))
 
+Exit = False
+
 # Listening to Server and Sending topic
 def receive():
 	global client
@@ -21,33 +23,43 @@ def receive():
 
 			if message == 'TOPIC':
 				id = None
-				#// While ack doesn't come
+				#// If ack doesn't come keep sending topic
 				while id == None:
 					client.send(topic.encode('ascii'))
 					id = client.recv(1024).decode('ascii')
+
 				print("ProducerID received:",id)
 
 			elif message == 'TYPE':
 				ack = None
+				#// If ack doesn't come keep sending topic
 				while ack == None:
 					client.send(type.encode('ascii'))
 					ack = client.recv(1024).decode('ascii')
+
 				print("ACK recieved for type")
 
 			else:
 				client.send('1'.encode('ascii'))	# message recieved ack
+				
 				if message!= '1':
 					print(message)
+
 		except Exception as e:
-			print("exception: ",e)
+
+			# print("exception: ",e)
 			
-			print("Failed! Retrying after 30 seconds...")
+			sleep(2)
+			
+			if Exit:
+				break
+
+			print("Connection with broker failed!\nRetrying after 15 seconds...")
 			sleep(15)
-			
-			#client.close()
 
 			connected = False
-			client = socket.socket()
+			client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
 			while connected == False:
 				try:
 					client.connect(('127.0.0.1',broker_port))
@@ -55,28 +67,28 @@ def receive():
 
 					write_thread = threading.Thread(target=write)
 					write_thread.start()
+
 				except:
-					#print("Failed. Retrying...")
-					#sleep(2)
-					#client.close()
 					break
+
 			sleep(1)
-			#break
 
 # Sending Messages To Broker
+
 def write():
 	while True:
 		message = 'topic({}): {}'.format(topic, input())
-		#"""
+
 		if "EXIT" in message:
 			client.send("EXIT".encode('ascii'))
 			print("exiting...")
 			sleep(1)
 			client.close()
-			#exit()
+			global Exit
+			Exit = True
 			break
-		#"""
-		#? Send
+		
+		# Send
 		else:
 			ack = None
 			while ack == None:
@@ -84,10 +96,10 @@ def write():
 				ack = client.recv(10).decode('ascii')
 
 
-# Starting Threads For Listening And Writing
+# Starting thread for listening
 receive_thread = threading.Thread(target=receive)
 receive_thread.start()
 
-sleep(3)
+# Starting thread for writing
 write_thread = threading.Thread(target=write)
 write_thread.start()

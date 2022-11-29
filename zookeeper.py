@@ -8,7 +8,7 @@ def handle():
 	global brokers
 	global leader_address
 	while True:
-		sleep(15)			# Poll every 30 secs
+		sleep(15)			# Poll every 15 secs
 		counter = 1
 		flag = False
 

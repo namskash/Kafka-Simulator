@@ -6,30 +6,30 @@ import subprocess
 
 # % Zookeeper functions:
 
-leader = 1
-followers = [55556,55557]
+leader = 1					# Leader bit
+followers = [55556,55557]	# Followers' port no.s for inter-broker comms
 
 broker = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 broker.connect(('127.0.0.1',11111))		#% Connect to zookeeper's port
 
-# Listening to Server and Sending topic
+# Listening to zookeeper and sending heartbeat
 def zookeeper_receive():
 	while True:
 		try:
 			message = broker.recv(1024).decode('ascii')
 
 			if message == 'HEARTBEAT':
-				broker.send("1".encode('ascii'))
+				broker.send("1".encode('ascii'))	# Send heartbeat
 
 			elif message == 'LEADER':
-				print("I have been made leader!!")
-				broker.send("1".encode('ascii'))
+				broker.send("1".encode('ascii'))	# Send ack
+				print("I have been made leader!")
 				
 				global leader
-				leader = 1
-				break
+				leader = 1							# Activate leader bit
+				
 		except:
-			print("except zookeeper")
+			# print("except zookeeper")
 			pass
 
 # Starting Threads For Listening And Writing
@@ -38,29 +38,31 @@ receive_thread.start()
 
 
 #@ Broker functions
+## Leader:
 
-# Dicts For Clients and Their topics
+# Dictionaries for clients and their topics
 producers = {}
 consumers = {}
 
 def broadcast(message,topic,counter):
-	print(message)
+	print(topic,": ",message,sep = '')
 
 	_date = str(date.today())
 	_time = str(time())
 	message = message + "," + _date + "," + _time
 
-	key = topic.split("topic(")[-1].split(')')[0]				# TO get 'BD' from 'topic(BD)'
+	key = topic.split("topic(")[-1].split(')')[0]				# To get 'BD' from 'topic(BD)'
 
 # For all the consumers listening right now, just send the message (solves the issue of having to check for timestamp and stuff)
 	if key in consumers:
 		for client in consumers[key]:
 			ack = None
+			#// If ack doesn't come keep sending topic
 			while ack != '1':
 				client.send(message.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
 
-# Write to partitions as well
+# Write to partitions
 	o = subprocess.run(["mkdir", "-p",topic])					#,capture_output=True,text=True)
 
 	f0 = open('{}/p{}_c0.txt'.format(topic, counter%3), 'a')
@@ -144,14 +146,12 @@ def handle(client,address,topic,type):
 				client.close()
 				if type == 'producer':
 					producers[topicCopy].remove(client)
-					print(producers)
+					# print(producers)
 
 				break	# exit this thread of handle
 		except Exception as e:
-			print("exception:",e)
-			# print("except")
-			# Removing And Closing Clients
-			# client.close()
+			# print("exception:",e)
+			
 			print("%s at port number: %d left"%(type,address[1]))
 
 			if type == 'producer':
@@ -227,7 +227,7 @@ if leader == 1:
 	server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	server.bind(('127.0.0.1', 55555))
 	server.listen()
-	print('Broker is running')
+	print('Broker is running...')
 
 	sleep(5)	# Wait for the other brokers to start
 
