@@ -91,9 +91,6 @@ def broadcast(message,topic,counter):
 def broadcastFromBeg(client,topic):
 	try:
 		f0 = open('{}/p0_c0.txt'.format(topic), 'r')
-		f1 = open('{}/p1_c0.txt'.format(topic), 'r')
-		f2 = open('{}/p2_c0.txt'.format(topic), 'r')
-		
 		for line in f0:
 			print(line)
 			line = line.strip()
@@ -103,6 +100,7 @@ def broadcastFromBeg(client,topic):
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
 
+		f1 = open('{}/p1_c0.txt'.format(topic), 'r')
 		for line in f1:
 			line = line.strip()
 			ack = None
@@ -111,6 +109,7 @@ def broadcastFromBeg(client,topic):
 				client.send(line.encode('ascii'))
 				ack = client.recv(10).decode('ascii')
 
+		f2 = open('{}/p2_c0.txt'.format(topic), 'r')
 		for line in f2:
 			line = line.strip()
 			ack = None
