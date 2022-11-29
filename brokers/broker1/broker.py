@@ -92,7 +92,6 @@ def broadcastFromBeg(client,topic):
 	try:
 		f0 = open('{}/p0_c0.txt'.format(topic), 'r')
 		for line in f0:
-			print(line)
 			line = line.strip()
 			ack = None
 			#// If ack doesn't come keep sending topic

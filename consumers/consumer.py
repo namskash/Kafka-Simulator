@@ -1,6 +1,7 @@
 import socket
 import threading
 from time import sleep
+import datetime
 import sys
 from colorama import Fore, Style
 
@@ -52,8 +53,10 @@ def receive():
 
 				if message!= '1':
 					if ',' in message:
+						# Circus to make it look very readable:
 						msg = message.split(',')	# Message from producer
-						print(Style.DIM + 'date:',msg[1],'\ttime(ms):',msg[2],Style.RESET_ALL,'\nmessage:',msg[0])	# Easier to read
+						_time = datetime.datetime.fromtimestamp(float(msg[2])).strftime('%c')
+						print(Style.DIM + '\ndate:',msg[1],'    time:',_time[11:19],'\ntime(since epoch):',msg[2],Style.RESET_ALL,'\nmessage:',msg[0])
 					
 					else:
 						print(message)				# Message from broker
