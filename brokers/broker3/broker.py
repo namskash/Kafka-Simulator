@@ -6,7 +6,7 @@ import subprocess
 
 # % Zookeeper functions:
 
-global leader
+#global leader
 leader = 0
 followers = []
 
@@ -162,7 +162,7 @@ def handle(client,address,topic,type):
 def receive():
 	while True:
 		# Accept Connection
-		client, address = server.accept()
+		client, address = server2.accept()
 		print("Connected! Port number: {}".format(address[1]))
 
 		# Request And Store topic
@@ -172,6 +172,7 @@ def receive():
 			topic = client.recv(1024).decode('ascii')
 
 		#% send ACK
+		print("address before err: ",address)
 		client.send(str(address[1]).encode('ascii'))
 
 		sleep(1)
@@ -274,12 +275,8 @@ leader_thread.start()
 follow_thread = threading.Thread(target=follower,args=())
 follow_thread.start()
 
-#handle_thread = threading.Thread(target=leaderChangeHandle,args=())
-#handle_thread.start()
-# Leader =1 now ! Starting Server
-
 while leader == 0:
-	pass
+	pass	# wait
 
 try:
 	server2 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
