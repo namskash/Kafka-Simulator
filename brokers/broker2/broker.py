@@ -82,10 +82,7 @@ def broadcast(message,topic,counter):
 		msg = topic + " - "
 		msg += str(counter) + " - "
 		msg += message
-		try:
-			follower1.send(msg.encode("ascii"))
-		except Exception as e:
-			print("follower!!!",e)
+		follower1.send(msg.encode("ascii"))
 
 # For consumer --from-beginning
 def broadcastFromBeg(client,topic):
@@ -213,9 +210,13 @@ def receive():
 
 		# Print And Broadcast topic
 		print("Topic: {}, type: {}".format(topic,type))
+		message = 'Connected to broker!'
+		if type == 'producer':
+			message += '\ntype your msg: '
+
 		ack = None
 		while ack == None:
-			client.send('Connected to broker!'.encode('ascii'))
+			client.send(message.encode('ascii'))
 			ack = client.recv(10)
 
 		# Start Handling Thread For Client

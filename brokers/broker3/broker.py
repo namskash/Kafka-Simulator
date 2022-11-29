@@ -77,7 +77,7 @@ def broadcast(message,topic,counter):
 	f2.close()
 
 	if leader == 1:
-		# TODO Send message to followers
+		# TODO Send message to followers but in current design, no followers
 		pass
 
 # For consumer --from-beginning
@@ -198,15 +198,19 @@ def receive():
 				consumers[topic] = [client]
 
 		else: 	#% zookeeper
-			#broker.send("1".encode("ascii"))
+			broker.send("1".encode("ascii"))
 			pass
 
 
 		# Print And Broadcast topic
 		print("Topic: {}, type: {}".format(topic,type))
+		message = 'Connected to broker!'
+		if type == 'producer':
+			message += '\ntype your msg: '
+
 		ack = None
 		while ack == None:
-			client.send('Connected to broker!'.encode('ascii'))
+			client.send(message.encode('ascii'))
 			ack = client.recv(10)
 
 		# Start Handling Thread For Client
@@ -215,12 +219,14 @@ def receive():
 
 
 ## Followers:
-def leaderChangeHandle():
-	leader_broker, address = server.accept()
-	print("Leader changed:",address)
-	
-	follow_thread = threading.Thread(target=follower,args=())
-	follow_thread.start()
+def leaderHandle():
+	global leader_broker,addr
+	while leader == 0:
+		leader_broker, addr = server.accept()
+		print("Leader changed:",addr)
+		
+		follow_thread = threading.Thread(target=follower,args=())
+		follow_thread.start()
 
 def follower():
 	global leader
@@ -258,7 +264,12 @@ def follower():
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.bind(('127.0.0.1', 55557))
 server.listen()
-leader_broker, address = server.accept()
+
+global leader_broker,addr
+leader_broker, addr = server.accept()
+
+leader_thread = threading.Thread(target=leaderHandle,args=())
+leader_thread.start()
 
 follow_thread = threading.Thread(target=follower,args=())
 follow_thread.start()

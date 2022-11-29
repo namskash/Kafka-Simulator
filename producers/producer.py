@@ -51,7 +51,6 @@ def receive():
 			while connected == False:
 				try:
 					client.connect(('127.0.0.1',broker_port))
-					print("type your msg: ")
 					connected = True
 
 					write_thread = threading.Thread(target=write)
@@ -67,7 +66,7 @@ def receive():
 # Sending Messages To Broker
 def write():
 	while True:
-		message = 'topic({}): {}'.format(topic, input('type your msg: '))
+		message = 'topic({}): {}'.format(topic, input())
 		#"""
 		if "EXIT" in message:
 			client.send("EXIT".encode('ascii'))
