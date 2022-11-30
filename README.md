@@ -1,4 +1,4 @@
-# kafkaSimulator - User Manual
+# Kafka Simulator - User Manual
 
 ## Required Order for execution:
 
