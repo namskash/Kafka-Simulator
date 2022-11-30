@@ -1,6 +1,4 @@
-# kafkaSimulator
-
-## User Manual
+# kafkaSimulator - User Manual
 
 ## Required Order for execution:
 
