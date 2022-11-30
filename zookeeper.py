@@ -23,6 +23,10 @@ def handle():
 				heartbeat = client.recv(10).decode("ascii")
 			
 			except:
+				if client == -1:
+					print(address,"is",Fore.RED + "DEAD.",Fore.WHITE + "")
+					continue
+				
 				pass					# A follower is dead. Ignore
 
 			if heartbeat == "" and address == leader_address:	# If leader dies

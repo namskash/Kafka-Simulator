@@ -55,7 +55,7 @@ def broadcast(message,topic,counter):
 
 # For all the consumers listening right now, just send the message (solves the issue of having to check for timestamp and stuff)
 	if key in consumers:
-		for client in consumers[key]:
+		for client in consumers[key]:							# If a consumer in this topic exists
 			ack = None
 			#// If ack doesn't come keep sending topic
 			while ack != '1':
@@ -63,7 +63,7 @@ def broadcast(message,topic,counter):
 				ack = client.recv(10).decode('ascii')
 
 # Write to partitions:
-	o = subprocess.run(["mkdir", "-p",topic])					#,capture_output=True,text=True)
+	o = subprocess.run(["mkdir","-p",topic])					#,capture_output=True,text=True)
 
 	f0 = open('{}/p{}_c0.txt'.format(topic, counter%3), 'a')
 	f0.write(message + "\n")
