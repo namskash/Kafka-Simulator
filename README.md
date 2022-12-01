@@ -11,9 +11,9 @@
 ## Steps:
 
 1. Run Zookeeper: python3 zookeper.py
-2. Run Broker1: python3 broker1/broker.py
-3. Run Broker2: python3 broker2/broker.py
-4. Run Broker3: python3 broker3/broker.py
+2. Run Broker1: python3 brokers/broker1/broker.py
+3. Run Broker2: python3 brokers/broker2/broker.py
+4. Run Broker3: python3 brokers/broker3/broker.py
 
 - Note: After starting broker1 run the other 2 brokers within 5 seconds (because there is a sleep of 5 seconds before establishing a connection between the brokers).
 - This is needed only at the time of initial connection.
