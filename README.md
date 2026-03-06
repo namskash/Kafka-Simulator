@@ -1,5 +1,8 @@
 # Kafka Simulator - User Manual
 
+## Demo
+![demo](media/demo.mp4)
+
 ## Required Order for execution:
 
 1. Zookeeper
