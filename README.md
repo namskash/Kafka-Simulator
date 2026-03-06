@@ -1,7 +1,7 @@
 # Kafka Simulator - User Manual
 
 ## Demo
-[demo](https://youtu.be/MUWNEjdHvVA)
+<a href="https://youtu.be/MUWNEjdHvVA">Demo</a>
 
 ## Required Order for execution:
 
